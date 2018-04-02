@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/Jon-Erik/LIRI#readme",
   "dependencies": {
-    "node-spotify-api": "^1.0.7"
+    "dotenv": "^5.0.1",
+    "node-spotify-api": "^1.0.7",
+    "request": "^2.85.0"
   }
 }
