@@ -14,41 +14,57 @@ var inquirer = require('inquirer')
 
 var parameter = process.argv[2];
 
-inquirer.prompt([
-		{
-			type: "list",
-			message: "What would you like to do?",
-			choices: ["Find my tweets", "Find a movie", "Find a song", "Surprise me!"],
-			name: "functionChoice"
-		}
-	]).then(function(response) {
-		if (response.functionChoice === "Find a movie") {
-			inquirer.prompt([
-					{
-						type: "input",
-						message: "What movie do you want to find?",
-						name: "movieTitle"
-					}
-				]).then(function(movieResponse) {
-						movieThis(movieResponse.movieTitle);
-					})
-		} else if (response.functionChoice === "Find my tweets") {
-			myTweets();
-		} else if (response.functionChoice === "Find a song") {
-			inquirer.prompt([
-					{
-						type: "input",
-						message: "What song do you want to find?",
-						name: "songName",
-						default: "The Sign Ace the Base"
-					}
-				]).then(function(songResponse) {
-						spotifyThisSong(songResponse.songName)
-					})
-		} else if (response.functionChoice === "Surprise me!") {
-			doThis();
-		}
-	})
+// inquirer.prompt([
+// 		{
+// 			type: "list",
+// 			message: "What would you like to do?",
+// 			choices: ["Find my tweets", "Find a movie", "Find a song", "Surprise me!"],
+// 			name: "functionChoice"
+// 		}
+// 	]).then(function(response) {
+// 		if (response.functionChoice === "Find a movie") {
+// 			inquirer.prompt([
+// 					{
+// 						type: "input",
+// 						message: "What movie do you want to find?",
+// 						name: "movieTitle"
+// 					}
+// 				]).then(function(movieResponse) {
+// 						movieThis(movieResponse.movieTitle);
+// 					})
+// 		} else if (response.functionChoice === "Find my tweets") {
+// 			myTweets();
+// 		} else if (response.functionChoice === "Find a song") {
+// 			inquirer.prompt([
+// 					{
+// 						type: "input",
+// 						message: "What song do you want to find?",
+// 						name: "songName",
+// 						default: "The Sign Ace the Base"
+// 					}
+// 				]).then(function(songResponse) {
+// 						spotifyThisSong(songResponse.songName)
+// 					})
+// 		} else if (response.functionChoice === "Surprise me!") {
+// 			doThis();
+// 		}
+// 	})
+
+if (parameter === "spotify-this-song") {
+	if (process.argv.slice(3).length === 0) {
+		spotifyThisSong("The Sign Ace the Base");
+	} else {
+	spotifyThisSong(process.argv.slice(3))
+	}
+} else if (parameter === "my-tweets") {
+	myTweets();
+} else if (parameter === "movie-this") {
+	movieThis(process.argv.slice(3));
+} else if (parameter === "do-this") {
+	doThis();
+} else {
+	console.log("Please enter a valid argument.");
+}
 
 function myTweets() {
 	var params = {screen_name: 'jdauntchandler'};
@@ -68,9 +84,7 @@ function myTweets() {
 }
 
 function spotifyThisSong(songName) {
-	
-	songName = (typeof songName !== 'undefined') ? songName : "The Sign Ace of Base"
-
+	//console.log(songName)
 	spotify.search({type: 'track', query: songName}, function(err, data) {
 		if (err) {
 			return console.error(err);
