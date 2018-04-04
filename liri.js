@@ -8,24 +8,47 @@ var spotify = new Spotify(keys.spotify);
 var Twitter = require('twitter');
 var client = new Twitter(keys.twitter);
 
+var fs = require('fs');
+
+var inquirer = require('inquirer')
+
 var parameter = process.argv[2];
 
-if (parameter === "my-tweets") {
-	myTweets();
-} else if (parameter === "spotify-this-song") {
-	//console.log(process.argv.slice(3))
-	// if (process.argv.slice(3) === []) {
-	// 	spotifyThisSong(['The', 'Sign']);
-	// } else {
-		spotifyThisSong(process.argv.slice(3));
-	//}
-} else if (parameter === "movie-this") {
-  	movieThis(process.argv.slice(3));
-} else if (parameter === "do-what-it-says") {
-	doThis();
-} else {
-	console.log("Please enter a valid command.")
-}
+inquirer.prompt([
+		{
+			type: "list",
+			message: "What would you like to do?",
+			choices: ["Find my tweets", "Find a movie", "Find a song", "Surprise me!"],
+			name: "functionChoice"
+		}
+	]).then(function(response) {
+		if (response.functionChoice === "Find a movie") {
+			inquirer.prompt([
+					{
+						type: "input",
+						message: "What movie do you want to find?",
+						name: "movieTitle"
+					}
+				]).then(function(movieResponse) {
+						movieThis(movieResponse.movieTitle);
+					})
+		} else if (response.functionChoice === "Find my tweets") {
+			myTweets();
+		} else if (response.functionChoice === "Find a song") {
+			inquirer.prompt([
+					{
+						type: "input",
+						message: "What song do you want to find?",
+						name: "songName",
+						default: "The Sign Ace the Base"
+					}
+				]).then(function(songResponse) {
+						spotifyThisSong(songResponse.songName)
+					})
+		} else if (response.functionChoice === "Surprise me!") {
+			doThis();
+		}
+	})
 
 function myTweets() {
 	var params = {screen_name: 'jdauntchandler'};
@@ -33,7 +56,9 @@ function myTweets() {
 	  if (!error) {
 	    //console.log(tweets);
 	    for (i = 0; i < tweets.length; i++) {
-	    	console.log("Tweet " + (i + 1) + ": " + tweets[i].text);
+	    	console.log("Tweet " + (i + 1) + ": " + tweets[i].text) 
+	    	console.log("Created on " + tweets[i]['created_at']);
+	    	console.log("---------------------------------")
 	    	if (i > 20) {
 	    		return;
 	    	}
@@ -43,25 +68,45 @@ function myTweets() {
 }
 
 function spotifyThisSong(songName) {
-	console.log(songName)
-	if (songName === []) {
-		songName.push("The", "Sign");
-		console.log(songName);
-	}
+	
+	songName = (typeof songName !== 'undefined') ? songName : "The Sign Ace of Base"
+
 	spotify.search({type: 'track', query: songName}, function(err, data) {
 		if (err) {
 			return console.error(err);
 		}
 
-		var artistName = JSON.stringify(data.tracks.items[0].artists[0].name, null, 2);
-		var songName = JSON.stringify(data.tracks.items[0].name, null, 2)
-		var previewLink = JSON.stringify(data.tracks.items[0]["external_urls"].spotify)
-		var album = JSON.stringify(data.tracks.items[0].album.name)
-		
-		console.log("Artist: " + artistName)
-		console.log("Song Name: " + songName)
-		console.log("Album: " + album)
-		console.log("Link to Spotify: " + previewLink)
+		if (data.tracks.items.length === 0) {
+			console.log("Sorry, no results.")
+		}
+
+		if (data.tracks.items.length < 5) {
+			for (i = 0; i < data.tracks.items.length; i++) {
+				var artistName = JSON.stringify(data.tracks.items[i].artists[0].name, null, 2);
+				var songName = JSON.stringify(data.tracks.items[i].name, null, 2)
+				var previewLink = JSON.stringify(data.tracks.items[i]["external_urls"].spotify)
+				var album = JSON.stringify(data.tracks.items[i].album.name)
+				
+				console.log("Artist: " + artistName)
+				console.log("Song Name: " + songName)
+				console.log("Album: " + album)
+				console.log("Link to Spotify: " + previewLink)
+				console.log("----------------------------------")
+			}
+		} else if (data.tracks.items.length >= 5) {
+			for (i = 0; i < 5; i++) {
+				var artistName = JSON.stringify(data.tracks.items[i].artists[0].name, null, 2);
+				var songName = JSON.stringify(data.tracks.items[i].name, null, 2)
+				var previewLink = JSON.stringify(data.tracks.items[i]["external_urls"].spotify)
+				var album = JSON.stringify(data.tracks.items[i].album.name)
+				
+				console.log("Artist: " + artistName)
+				console.log("Song Name: " + songName)
+				console.log("Album: " + album)
+				console.log("Link to Spotify: " + previewLink)
+				console.log("----------------------------------")
+			}
+		}
 	});
 }
 
@@ -97,5 +142,25 @@ function movieThis(movieName) {
 }
 
 function doThis() {
-	console.log("do this function");
+	fs.readFile('random.txt', 'utf8', function(err, data) {
+		if (err) {
+			return console.error(err);
+		}
+
+		var array = data.split(",");
+
+		if (array[0] === "spotify-this-song") {
+			console.log("Searched for song " + array[1] + ":");			
+			spotifyThisSong(array[1]);
+		} else if (array[0] === "my-tweets") {
+			console.log("Finding your tweets:")
+			myTweets();
+		} else if (array[0] === "movie-this") {
+			console.log("Searched for movie " + array[1] + ":");
+			movieThis(array[1])
+		} else {
+			console.log("Sorry, can't do anything right now!")
+		}
+		
+	})
 }
