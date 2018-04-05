@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const keys = require("./keys");
 
+//keys for spotify and twitter apis defined, imported from keys via dotenv
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 
@@ -14,6 +15,7 @@ var inquirer = require('inquirer')
 
 var parameter = process.argv[2];
 
+//Optional inquirer interface that could replace basic command line interface
 // inquirer.prompt([
 // 		{
 // 			type: "list",
@@ -50,7 +52,9 @@ var parameter = process.argv[2];
 // 		}
 // 	})
 
+//Defines functions based on command line entries
 if (parameter === "spotify-this-song") {
+	//default paramater defined if no song name is entered
 	if (process.argv.slice(3).length === 0) {
 		spotifyThisSong("The Sign Ace the Base");
 	} else {
@@ -59,13 +63,19 @@ if (parameter === "spotify-this-song") {
 } else if (parameter === "my-tweets") {
 	myTweets();
 } else if (parameter === "movie-this") {
-	movieThis(process.argv.slice(3));
-} else if (parameter === "do-this") {
+	//default parameter defined if no movie name is entered
+	if (process.argv.slice(3).length === 0) {
+		movieThis("Mr Nobody");
+	} else {
+		movieThis(process.argv.slice(3));
+	}
+} else if (parameter === "do-what-it-says") {
 	doThis();
 } else {
 	console.log("Please enter a valid argument.");
 }
 
+//function which uses twitter node module to log 20 most recent tweets
 function myTweets() {
 	var params = {screen_name: 'jdauntchandler'};
 	client.get('statuses/user_timeline', params, function(error, tweets, response) {
@@ -83,8 +93,10 @@ function myTweets() {
 	});
 }
 
+//function which uses node-spotify-api node module to find a maximum of 5 responses to 
+//a search query
 function spotifyThisSong(songName) {
-	//console.log(songName)
+
 	spotify.search({type: 'track', query: songName}, function(err, data) {
 		if (err) {
 			return console.error(err);
@@ -92,9 +104,7 @@ function spotifyThisSong(songName) {
 
 		if (data.tracks.items.length === 0) {
 			console.log("Sorry, no results.")
-		}
-
-		if (data.tracks.items.length < 5) {
+		} else if (data.tracks.items.length < 5) {
 			for (i = 0; i < data.tracks.items.length; i++) {
 				var artistName = JSON.stringify(data.tracks.items[i].artists[0].name, null, 2);
 				var songName = JSON.stringify(data.tracks.items[i].name, null, 2)
@@ -124,6 +134,8 @@ function spotifyThisSong(songName) {
 	});
 }
 
+//function which uses the omdb node module to find information on a film from the online movie database
+//api
 function movieThis(movieName) {
 	var request = require("request");
 
@@ -135,6 +147,8 @@ function movieThis(movieName) {
 		   	console.log("Title: " + answer.Title);
 		   	console.log("Year: " + answer.Year);
 		   	
+		   	//Some films do not have rating information. This code prevents errors if this
+		   	//info does not exist
 		   	if (typeof answer.Ratings[0] === 'undefined') {
 		   		console.log("IMDB Rating: No information found.")
 		   	} else {
@@ -155,12 +169,14 @@ function movieThis(movieName) {
 	})
 }
 
+//This function requires text from a separate .txt file, reads it, and performs one
+//of the above functions based on what this text says.
 function doThis() {
 	fs.readFile('random.txt', 'utf8', function(err, data) {
 		if (err) {
 			return console.error(err);
 		}
-
+		//parameter and argument are split into an array at the comma between them
 		var array = data.split(",");
 
 		if (array[0] === "spotify-this-song") {
@@ -175,6 +191,5 @@ function doThis() {
 		} else {
 			console.log("Sorry, can't do anything right now!")
 		}
-		
 	})
 }
