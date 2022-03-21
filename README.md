@@ -1,4 +1,7 @@
 # LIRI
+
+## Coding Bootcamp Project
+
 Language Interpretation and Recognition Interface
 
 This is a basic node application which requires Twitter and Spotify API credentials to run (they will be recognized if put into a .env file). The command line accepts four different commands, sometimes with specified parameters, and outputs the information requested into the console.
